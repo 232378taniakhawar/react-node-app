@@ -1,0 +1,42 @@
+services:
+  frontend:
+    build: ./frontend
+    image: guestbook-frontend:1.0
+    container_name: guestbook-frontend
+    ports:
+      - "8082:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    image: guestbook-backend:1.0
+    container_name: guestbook-backend
+    ports:
+      - "5001:5000"
+    environment:
+      DB_HOST: db
+      DB_USER: appuser
+      DB_PASSWORD: apppassword
+      DB_NAME: guestbook
+      DB_PORT: 5432
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    container_name: guestbook-db
+    environment:
+      POSTGRES_DB: guestbook
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: apppassword
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+volumes:
+  db_data:
