@@ -1,4 +1,4 @@
-name: Build Docker Images
+name: Build and Push Docker Images
 
 on:
   push:
@@ -6,22 +6,29 @@ on:
       - main
 
 jobs:
-  docker-build:
-
+  docker-build-push:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Build Backend Image
-        run: |
-          docker build -t backend-image ./backend
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build Frontend Image
-        run: |
-          docker build -t frontend-image ./frontend
+      - name: Build and Push Backend Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/react-node-app-backend:latest
 
-      - name: Show Docker Images
-        run: docker images
+      - name: Build and Push Frontend Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/react-node-app-frontend:latest
